@@ -1,12 +1,87 @@
 # =============================================================================
 # Antigravity Remote Docker
 # A GPU-accelerated container for running Google Antigravity remotely via noVNC
+# Supports: NVIDIA (CUDA), AMD (ROCm), Intel (VA-API/OpenCL), and CPU-only
 # =============================================================================
 
-FROM nvidia/cuda:12.3.1-runtime-ubuntu22.04
+ARG GPU_TYPE=nvidia
+
+# =============================================================================
+# Stage 1: Base Images
+# =============================================================================
+
+# --- NVIDIA Base ---
+FROM nvidia/cuda:12.4.0-base-ubuntu22.04 AS nvidia-base
+ENV NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=all
+# Install minimal NVIDIA tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cuda-toolkit-12-4 \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- AMD/ROCm Base ---
+FROM rocm/rocm-terminal:6.2.2 AS amd-base
+ENV AMD_VISIBLE_DEVICES=all \
+    ROCm_VERSION=6.2.2 \
+    HSA_OVERRIDE_GFX_VERSION=10.3.0
+# Install ROCm utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    rocm-smi \
+    rocminfo \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Intel Base ---
+FROM ubuntu:22.04 AS intel-base
+# Install Intel GPU drivers and compute runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    gpg-agent \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+# Add Intel GPU repository
+RUN wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+    gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
+    tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+# Install Intel GPU packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    intel-opencl-icd \
+    intel-level-zero-gpu \
+    level-zero \
+    intel-media-va-driver-non-free \
+    libmfx1 \
+    libmfxgen1 \
+    libvpl2 \
+    libegl-mesa0 \
+    libegl1-mesa \
+    libegl1-mesa-dev \
+    libgbm1 \
+    libgl1-mesa-dev \
+    libgl1-mesa-dri \
+    libglapi-mesa \
+    libgles2-mesa-dev \
+    libglx-mesa0 \
+    libigdgmm12 \
+    libxatracker2 \
+    mesa-va-drivers \
+    mesa-vdpau-drivers \
+    mesa-vulkan-drivers \
+    va-driver-all \
+    vainfo \
+    && rm -rf /var/lib/apt/lists/*
+ENV LIBVA_DRIVER_NAME=iHD
+
+# --- CPU-Only Base ---
+FROM ubuntu:22.04 AS cpu-base
+# No GPU-specific packages needed
+
+# =============================================================================
+# Stage 2: Final Image
+# =============================================================================
+FROM ${GPU_TYPE}-base AS final
 
 LABEL maintainer="raphl"
-LABEL description="Google Antigravity with noVNC remote access and GPU support"
+LABEL description="Google Antigravity with noVNC remote access and multi-GPU support"
 
 # =============================================================================
 # Environment Configuration
@@ -21,7 +96,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     # VNC settings
     VNC_PORT=5901 \
     NOVNC_PORT=6080 \
-    # VNC_PASSWORD must be set via environment variable \
+    # VNC_PASSWORD must be set via environment variable
     # User settings
     USER=antigravity \
     UID=1000 \
@@ -62,8 +137,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-numpy \
-    # Audio (optional, for future use)
+    # Audio (optional)
     pulseaudio \
+    libasound2 \
     # Clipboard support
     xclip \
     xsel \
@@ -79,9 +155,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     htop \
     procps \
     net-tools \
-    # Window management (for auto-maximize)
+    xdg-utils \
+    # Window management
     wmctrl \
     xdotool \
+    # Dependencies often needed for Chrome/GUI apps
+    libgbm1 \
+    libnss3 \
+    libnspr4 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
@@ -138,7 +228,10 @@ RUN groupadd -g ${GID} ${USER} \
 # =============================================================================
 # Configure VNC and Desktop
 # =============================================================================
-RUN mkdir -p /home/${USER}/.vnc /home/${USER}/.config \
+# Create necessary directories
+RUN mkdir -p /home/${USER}/.vnc \
+    /home/${USER}/.config \
+    /var/log/supervisor \
     && chown -R ${USER}:${USER} /home/${USER}
 
 # =============================================================================
@@ -158,7 +251,6 @@ RUN echo 'APT::Periodic::Update-Package-Lists "1";' > /etc/apt/apt.conf.d/20auto
 # =============================================================================
 # Exposed Ports
 # =============================================================================
-# VNC: 5901, noVNC: 6080
 EXPOSE ${VNC_PORT} ${NOVNC_PORT}
 
 # =============================================================================
@@ -166,6 +258,12 @@ EXPOSE ${VNC_PORT} ${NOVNC_PORT}
 # =============================================================================
 RUN mkdir -p /opt/defaults
 COPY config/xfce4-panel.xml /opt/defaults/xfce4-panel.xml
+
+# =============================================================================
+# GPU Type Environment Variable
+# =============================================================================
+ARG GPU_TYPE
+ENV GPU_TYPE=${GPU_TYPE}
 
 # =============================================================================
 # Volumes

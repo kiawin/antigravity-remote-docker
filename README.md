@@ -4,13 +4,42 @@ A high-performance, GPU-accelerated lightweight Linux desktop environment design
 
 ## Features
 
-*   **GPU Acceleration**: Full NVIDIA GPU passthrough support for high-performance rendering.
+*   **Multi-GPU Support**: NVIDIA (CUDA), AMD (ROCm), and Intel (VA-API/OpenCL) support.
+*   **CPU-Only Mode**: Fallback for systems without dedicated GPUs.
 *   **Web Access**: Zero-install access via any modern web browser using noVNC.
 *   **Google Chrome**: Pre-installed and configured for the containerized environment.
 *   **Automated Workflow**: Antigravity launches automatically (maximized) upon startup.
 *   **Optimized UI**: Minimalist, distraction-free desktop panel configuration.
 *   **Persistent**: User workspace and configurations persist across container restarts.
-*   **Resource Efficient**: Includes idle monitoring to optimize resource usage when inactive.
+
+## GPU Support
+
+This project supports multiple GPU types:
+
+- ✅ **NVIDIA GPUs** (CUDA)
+- ✅ **AMD GPUs** (ROCm)
+- ✅ **Intel GPUs** (Integrated and Discrete)
+- ✅ **CPU-only mode** (No GPU required)
+
+### Quick Setup
+
+#### Option 1: Auto-Detect (Recommended)
+```bash
+chmod +x scripts/detect-gpu.sh
+./scripts/detect-gpu.sh
+docker-compose up -d --build
+```
+
+#### Option 2: Manual Selection
+```bash
+cp .env.nvidia .env  # For NVIDIA
+cp .env.amd .env     # For AMD
+cp .env.intel .env   # For Intel
+cp .env.cpu .env     # For CPU-only
+docker-compose up -d --build
+```
+See [docs/GPU-SETUP.md](docs/GPU-SETUP.md) for detailed prerequisites and troubleshooting.
+
 
 ## Prerequisites
 
@@ -79,6 +108,7 @@ Control the container behavior using the `.env` file:
 
 | Variable                | Description                   | Default       |
 | ----------------------- | ----------------------------- | ------------- |
+| `GPU_TYPE`              | GPU type (nvidia, amd, intel) | `nvidia`      |
 | `VNC_PASSWORD`          | Password for VNC connection   | `antigravity` |
 | `DISPLAY_WIDTH`         | Default horizontal resolution | `1920`        |
 | `DISPLAY_HEIGHT`        | Default vertical resolution   | `1080`        |

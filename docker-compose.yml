@@ -12,20 +12,36 @@ services:
   antigravity:
     build:
       context: .
+      args:
+        GPU_TYPE: ${GPU_TYPE:-nvidia}
       dockerfile: Dockerfile
     image: antigravity-remote:latest
     container_name: antigravity-remote
 
     # =========================================================================
-    # GPU Configuration
+    # Runtime Configuration
     # =========================================================================
+    # Runtime varies by GPU type (nvidia, amd, runc)
+    runtime: ${DOCKER_RUNTIME:-runc}
+    
+    # Device mappings for AMD and Intel
+    devices: ${GPU_DEVICES:-[]}
+    
+    # Security options (needed for AMD)
+    security_opt: ${SECURITY_OPTS:-[]}
+    
+    # Group memberships (video/render)
+    group_add: ${GPU_GROUPS:-[]}
+
+    # =========================================================================
+    # GPU Resource Reservations (For NVIDIA strict mode)
+    # =========================================================================
+    # Only applies when using NVIDIA runtime
     deploy:
       resources:
         reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [ gpu ]
+          # This variable can be empty for non-NVIDIA setups
+          devices: ${DEPLOY_DEVICES:-[]}
         limits:
           memory: 16G
           cpus: '8'
@@ -34,12 +50,21 @@ services:
     # Environment Variables
     # =========================================================================
     environment:
-      # Display settings - resolution auto-adjusts to browser window
+      # GPU Configuration
+      - GPU_TYPE=${GPU_TYPE:-nvidia}
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-all}
+      - AMD_VISIBLE_DEVICES=${AMD_VISIBLE_DEVICES:-all}
+      - ROCm_VISIBLE_DEVICES=${ROCm_VISIBLE_DEVICES:-all}
+      - LIBVA_DRIVER_NAME=${LIBVA_DRIVER_NAME:-iHD}
+      - ONEAPI_DEVICE_SELECTOR=${ONEAPI_DEVICE_SELECTOR:-*}
+
+      # Display settings
       - DISPLAY_WIDTH=${DISPLAY_WIDTH:-1920}
       - DISPLAY_HEIGHT=${DISPLAY_HEIGHT:-1080}
       - DISPLAY_DEPTH=24
 
-      # VNC password - REQUIRED! Set in .env file before starting
+      # VNC password - REQUIRED!
       - VNC_PASSWORD=${VNC_PASSWORD}
 
       # Timezone
@@ -48,12 +73,8 @@ services:
       # Auto-update Antigravity
       - ANTIGRAVITY_AUTO_UPDATE=true
 
-      # Auto-launch Antigravity fullscreen on connect
+      # Auto-launch Antigravity
       - AUTOSTART_ANTIGRAVITY=${AUTOSTART_ANTIGRAVITY:-true}
-
-      # NVIDIA runtime
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
 
       # Idle optimization settings
       - IDLE_CHECK_INTERVAL=${IDLE_CHECK_INTERVAL:-30}
@@ -64,43 +85,17 @@ services:
     # Port Mappings
     # =========================================================================
     ports:
-      # noVNC web interface
-      - "6080:6080"
-      # Direct VNC access (optional, for native VNC clients)
-      - "5901:5901"
+      - "${NOVNC_PORT:-6080}:6080" # noVNC web interface
+      - "${VNC_PORT:-5901}:5901"   # Direct VNC access
 
     # =========================================================================
     # Volume Mounts
     # =========================================================================
     volumes:
-      # Persistent workspace for your Antigravity projects
       - ./data/workspace:/home/antigravity/workspace
-
-      # Persistent configuration
       - ./data/config:/home/antigravity/.config
-
-      # Persistent Antigravity-specific data
       - ./data/antigravity:/home/antigravity/.antigravity
-      # Share clipboard with host (Linux only)
-      # - /tmp/.X11-unix:/tmp/.X11-unix:ro
-
-      # =========================================================================
-      # Runtime Configuration
-      # =========================================================================
-      # Use NVIDIA runtime
-    runtime: nvidia
-
-    # Security - keep container isolated but functional
-    # Use default seccomp profile for better isolation
-    # If you experience GPU/X11 issues, create a custom profile:
-    # security_opt:
-    #   - seccomp=./config/seccomp-profile.json
-
-    # Capabilities for connection manager (iptables)
-    # No additional capabilities needed for basic VNC/noVNC functionality
-    # If you need iptables/network configuration, uncomment:
-    # cap_add:
-    #   - NET_ADMIN
+      # - /tmp/.X11-unix:/tmp/.X11-unix:ro # Share clipboard (Linux)
 
     # Shared memory for better performance
     shm_size: '2gb'
@@ -119,7 +114,7 @@ services:
       start_period: 30s
 
 # =============================================================================
-# Networks (optional, for future expansion)
+# Networks
 # =============================================================================
 networks:
   default:

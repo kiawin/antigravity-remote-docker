@@ -110,7 +110,12 @@ echo ""
 echo "==========================================="
 echo "  GPU Information"
 echo "==========================================="
-nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader 2>/dev/null || echo "No NVIDIA GPU detected"
+if [ -f /opt/scripts/verify-gpu.sh ]; then
+    /opt/scripts/verify-gpu.sh || echo "Warning: GPU verification failed"
+else
+    # Fallback for older images or if script missing
+    nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader 2>/dev/null || echo "No NVIDIA GPU detected"
+fi
 echo ""
 
 # =============================================================================
