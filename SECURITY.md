@@ -24,6 +24,12 @@ If you believe you have found a security vulnerability in this project, please r
     *   **Do not** expose this directly to the internet.
     *   Use a reverse proxy (Nginx, Traefik, Caddy) with HTTPS termination.
 
+### VNC Localhost Binding
+
+*   **Direct VNC Access**: The VNC server (port 5901) binds only to localhost within the container.
+*   **SSH Tunneling**: To use a native VNC client, set up an SSH tunnel to the Docker host.
+*   **noVNC Access**: The web interface remains accessible via port 6080 (use HTTPS in production).
+
 ### Container Privileges
 
 *   **Sudo Access**: The default `antigravity` user has restricted sudo access. Only specific commands (like system updates) are allowed.

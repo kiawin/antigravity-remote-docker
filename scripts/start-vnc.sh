@@ -29,7 +29,7 @@ rm -rf /tmp/.X${DISPLAY_NUM}-lock /tmp/.X11-unix/X${DISPLAY_NUM} 2>/dev/null || 
 exec vncserver :${DISPLAY_NUM} \
     -geometry ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT} \
     -depth ${DISPLAY_DEPTH} \
-    -localhost no \
+    -localhost yes \
     -SecurityTypes VncAuth \
     -rfbport ${VNC_PORT:-5901} \
     -fg \

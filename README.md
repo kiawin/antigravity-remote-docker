@@ -53,8 +53,23 @@ Once the container is running, you can access the desktop environment:
 Access the desktop directly from your browser. This method supports auto-login and adjusts resolution to your window size.
 *   **URL**: `http://localhost:6080`
 
-### VNC Client
+### VNC Client (Advanced)
+
 For better performance or specific keyboard shortcuts, use a standalone VNC client (e.g., RealVNC, TightVNC).
+
+> [!NOTE]
+> Direct VNC access requires SSH tunneling for security. The VNC server only accepts localhost connections.
+
+**Setup SSH Tunnel**:
+```bash
+# Forward local port 5901 to container's VNC port
+ssh -L 5901:localhost:5901 user@docker-host
+
+# Or if using Docker Desktop locally:
+# No tunnel needed - connect directly to localhost:5901
+```
+
+**Then connect your VNC client to**:
 *   **Address**: `localhost:5901`
 *   **Password**: The value you set in `VNC_PASSWORD`
 

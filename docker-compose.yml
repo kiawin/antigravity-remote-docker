@@ -91,12 +91,16 @@ services:
     runtime: nvidia
 
     # Security - keep container isolated but functional
-    security_opt:
-      - seccomp:unconfined
+    # Use default seccomp profile for better isolation
+    # If you experience GPU/X11 issues, create a custom profile:
+    # security_opt:
+    #   - seccomp=./config/seccomp-profile.json
 
     # Capabilities for connection manager (iptables)
-    cap_add:
-      - NET_ADMIN
+    # No additional capabilities needed for basic VNC/noVNC functionality
+    # If you need iptables/network configuration, uncomment:
+    # cap_add:
+    #   - NET_ADMIN
 
     # Shared memory for better performance
     shm_size: '2gb'
