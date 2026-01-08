@@ -39,8 +39,8 @@ services:
       - DISPLAY_HEIGHT=${DISPLAY_HEIGHT:-1080}
       - DISPLAY_DEPTH=24
 
-      # VNC password - CHANGE THIS!
-      - VNC_PASSWORD=${VNC_PASSWORD:-antigravity}
+      # VNC password - REQUIRED! Set in .env file before starting
+      - VNC_PASSWORD=${VNC_PASSWORD}
 
       # Timezone
       - TZ=${TZ:-America/Denver}

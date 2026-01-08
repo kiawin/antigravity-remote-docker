@@ -32,7 +32,12 @@ Before running this container, ensure your host system verifies the following re
     Copy the example configuration file and update it with your preferences.
     ```bash
     cp .env.example .env
+    nano .env  # Set VNC_PASSWORD to a strong password (min 8 characters)
     ```
+    > [!WARNING]  
+    > The container will **not start** without `VNC_PASSWORD` set in `.env`.  
+    > Never commit your `.env` file to version control.
+
     *Edit `.env` and set a secure `VNC_PASSWORD`.*
 
 3.  **Build and Run**
@@ -51,19 +56,19 @@ Access the desktop directly from your browser. This method supports auto-login a
 ### VNC Client
 For better performance or specific keyboard shortcuts, use a standalone VNC client (e.g., RealVNC, TightVNC).
 *   **Address**: `localhost:5901`
-*   **Password**: The value set in `VNC_PASSWORD` (default: `antigravity`)
+*   **Password**: The value you set in `VNC_PASSWORD`
 
 ## Configuration
 
 Control the container behavior using the `.env` file:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VNC_PASSWORD` | Password for VNC connection | `antigravity` |
-| `DISPLAY_WIDTH` | Default horizontal resolution | `1920` |
-| `DISPLAY_HEIGHT` | Default vertical resolution | `1080` |
-| `AUTOSTART_ANTIGRAVITY` | Launch app on startup | `true` |
-| `IDLE_TIMEOUT` | Seconds before idle state | `60` |
+| Variable                | Description                   | Default       |
+| ----------------------- | ----------------------------- | ------------- |
+| `VNC_PASSWORD`          | Password for VNC connection   | `antigravity` |
+| `DISPLAY_WIDTH`         | Default horizontal resolution | `1920`        |
+| `DISPLAY_HEIGHT`        | Default vertical resolution   | `1080`        |
+| `AUTOSTART_ANTIGRAVITY` | Launch app on startup         | `true`        |
+| `IDLE_TIMEOUT`          | Seconds before idle state     | `60`          |
 
 ## Customization
 

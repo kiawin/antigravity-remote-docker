@@ -13,11 +13,27 @@ echo "  Starting container initialization..."
 echo "==========================================="
 
 # =============================================================================
+# Validate VNC Password
+# =============================================================================
+if [ -z "${VNC_PASSWORD}" ]; then
+    echo "ERROR: VNC_PASSWORD environment variable is not set!"
+    echo "Please set a secure password in your .env file or docker-compose.yml"
+    exit 1
+fi
+
+if [ ${#VNC_PASSWORD} -lt 8 ]; then
+    echo "WARNING: VNC password is shorter than 8 characters!"
+    echo "This is considered weak. Please use a stronger password."
+    echo "Continuing in 5 seconds..."
+    sleep 5
+fi
+
+# =============================================================================
 # Set VNC Password
 # =============================================================================
 echo "Setting VNC password..."
 mkdir -p ~/.vnc
-echo "${VNC_PASSWORD:-antigravity}" | vncpasswd -f > ~/.vnc/passwd
+echo "${VNC_PASSWORD}" | vncpasswd -f > ~/.vnc/passwd
 chmod 600 ~/.vnc/passwd
 
 # =============================================================================

@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     # VNC settings
     VNC_PORT=5901 \
     NOVNC_PORT=6080 \
-    VNC_PASSWORD=antigravity \
+    # VNC_PASSWORD must be set via environment variable \
     # User settings
     USER=antigravity \
     UID=1000 \
@@ -130,7 +130,9 @@ RUN mkdir -p /etc/apt/keyrings \
 # =============================================================================
 RUN groupadd -g ${GID} ${USER} \
     && useradd -m -u ${UID} -g ${GID} -s /bin/bash ${USER} \
-    && echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/${USER} \
+    && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/apt-get update" >> /etc/sudoers.d/${USER} \
+    && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/apt-get install -y --only-upgrade antigravity" >> /etc/sudoers.d/${USER} \
+    && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/chown -R * /home/${USER}/*" >> /etc/sudoers.d/${USER} \
     && chmod 0440 /etc/sudoers.d/${USER}
 
 # =============================================================================
