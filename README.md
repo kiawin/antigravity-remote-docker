@@ -74,6 +74,13 @@ Before running this container, ensure your host system verifies the following re
     docker-compose up -d --build
     ```
 
+    > [!NOTE]
+    > **Podman Users**: Export the Docker image format to enable HEALTHCHECK support:
+    > ```bash
+    > export BUILDAH_FORMAT=docker
+    > podman-compose up -d --build
+    > ```
+
 ## Usage
 
 Once the container is running, you can access the desktop environment:
