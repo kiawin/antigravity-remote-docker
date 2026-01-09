@@ -43,10 +43,10 @@ services:
     # =========================================================================
     # Group Memberships (for GPU device access)
     # =========================================================================
-    # Add video/render groups for GPU access
+    # Add video group for GPU access
+    # Note: 'render' group may not exist in container; add via override if needed
     group_add:
       - video
-      - render
 
     # =========================================================================
     # Resource Limits
