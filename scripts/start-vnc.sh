@@ -26,11 +26,18 @@ rm -rf /tmp/.X${DISPLAY_NUM}-lock /tmp/.X11-unix/X${DISPLAY_NUM} 2>/dev/null || 
 # -localhost no: Allow connections from all interfaces (noVNC needs this)
 # -SecurityTypes: Use password authentication
 # -rfbport: VNC port
+# -AlwaysShared: Allow multiple simultaneous connections
+# -AcceptPointerEvents: Responsive mouse handling
+# -SendCutText/-AcceptCutText: Clipboard sharing
 exec vncserver :${DISPLAY_NUM} \
     -geometry ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT} \
     -depth ${DISPLAY_DEPTH} \
     -localhost yes \
     -SecurityTypes VncAuth \
     -rfbport ${VNC_PORT:-5901} \
+    -AlwaysShared \
+    -AcceptPointerEvents \
+    -SendCutText \
+    -AcceptCutText \
     -fg \
     -xstartup ~/.vnc/xstartup

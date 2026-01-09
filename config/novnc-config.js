@@ -23,5 +23,24 @@
         localStorage.setItem('clipboard', 'true');
     }
     
-    console.log('noVNC custom config loaded - language set to English');
+    // ==========================================================================
+    // E-ink / Low Latency Optimizations
+    // ==========================================================================
+    
+    // Disable compression for lower latency (CPU time saved > network bytes on LAN)
+    if (!localStorage.getItem('compression')) {
+        localStorage.setItem('compression', '0');
+    }
+    
+    // Lower quality for faster encoding (works well with e-ink grayscale)
+    if (!localStorage.getItem('quality')) {
+        localStorage.setItem('quality', '5');
+    }
+    
+    // Use dot cursor for faster visual feedback on slow-refresh displays
+    if (!localStorage.getItem('dotCursor')) {
+        localStorage.setItem('dotCursor', 'true');
+    }
+    
+    console.log('noVNC custom config loaded - language set to English, e-ink optimizations enabled');
 })();
