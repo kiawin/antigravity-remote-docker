@@ -84,6 +84,40 @@ if [ ! -f ~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml ]; then
 fi
 
 # =============================================================================
+# Configure devilspie2 for auto-maximize windows
+# =============================================================================
+echo "Configuring devilspie2 for window maximization..."
+mkdir -p ~/.config/devilspie2
+
+# Copy devilspie2 config if not present
+if [ ! -f ~/.config/devilspie2/maximize.lua ]; then
+    if [ -d /opt/defaults/devilspie2 ]; then
+        cp -r /opt/defaults/devilspie2/* ~/.config/devilspie2/
+    else
+        # Create a default maximize config if defaults not available
+        cat > ~/.config/devilspie2/maximize.lua << 'DEVILSPIE_EOF'
+-- Auto-maximize all windows on open
+maximize()
+DEVILSPIE_EOF
+    fi
+fi
+
+# Add devilspie2 to XFCE autostart
+mkdir -p ~/.config/autostart
+if [ ! -f ~/.config/autostart/devilspie2.desktop ]; then
+    cat > ~/.config/autostart/devilspie2.desktop << 'AUTOSTART_EOF'
+[Desktop Entry]
+Type=Application
+Name=Devilspie2
+Comment=Window matching daemon for auto-maximize
+Exec=devilspie2
+Hidden=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+AUTOSTART_EOF
+fi
+
+# =============================================================================
 # Create directories
 # =============================================================================
 echo "Creating workspace directories..."

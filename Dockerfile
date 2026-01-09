@@ -159,6 +159,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Window management
     wmctrl \
     xdotool \
+    devilspie2 \
     # Dependencies often needed for Chrome/GUI apps
     libgbm1 \
     libnss3 \
@@ -276,6 +277,7 @@ EXPOSE ${VNC_PORT} ${NOVNC_PORT}
 # =============================================================================
 RUN mkdir -p /opt/defaults
 COPY config/xfce4-panel.xml /opt/defaults/xfce4-panel.xml
+COPY config/devilspie2 /opt/defaults/devilspie2
 
 # =============================================================================
 # GPU Type Environment Variable
