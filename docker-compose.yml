@@ -2,10 +2,10 @@
 # Antigravity Remote Docker - Docker Compose Configuration
 # =============================================================================
 # Usage:
-#   Start:    docker-compose up -d
-#   Stop:     docker-compose down
-#   Logs:     docker-compose logs -f
-#   Rebuild:  docker-compose up -d --build
+#   Start:    podman-compose up -d (or docker-compose up -d)
+#   Stop:     podman-compose down
+#   Logs:     podman-compose logs -f
+#   Rebuild:  podman-compose up -d --build
 # =============================================================================
 
 services:
@@ -13,7 +13,7 @@ services:
     build:
       context: .
       args:
-        GPU_TYPE: ${GPU_TYPE:-nvidia}
+        GPU_TYPE: ${GPU_TYPE:-cpu}
       dockerfile: Dockerfile
     image: antigravity-remote:latest
     container_name: antigravity-remote
@@ -21,27 +21,38 @@ services:
     # =========================================================================
     # Runtime Configuration
     # =========================================================================
-    # Runtime varies by GPU type (nvidia, amd, runc)
-    runtime: ${DOCKER_RUNTIME:-runc}
-    
-    # Device mappings for AMD and Intel
-    devices: ${GPU_DEVICES:-[]}
-    
-    # Security options (needed for AMD)
-    security_opt: ${SECURITY_OPTS:-[]}
-    
-    # Group memberships (video/render)
-    group_add: ${GPU_GROUPS:-[]}
+    # Note: For NVIDIA runtime, set DOCKER_RUNTIME=nvidia in .env
+    # For podman, use: podman run --device nvidia.com/gpu=all
+    runtime: ${DOCKER_RUNTIME:-}
 
     # =========================================================================
-    # GPU Resource Reservations (For NVIDIA strict mode)
+    # Device Mappings
     # =========================================================================
-    # Only applies when using NVIDIA runtime
+    # For Intel/AMD: /dev/dri is passed through
+    # Uncomment additional devices as needed in your .env or override file
+    devices:
+      - /dev/dri:/dev/dri
+
+    # =========================================================================
+    # Security Options
+    # =========================================================================
+    # AMD ROCm may require seccomp=unconfined - add via override if needed
+    # security_opt:
+    #   - seccomp=unconfined
+
+    # =========================================================================
+    # Group Memberships (for GPU device access)
+    # =========================================================================
+    # Add video/render groups for GPU access
+    group_add:
+      - video
+      - render
+
+    # =========================================================================
+    # Resource Limits
+    # =========================================================================
     deploy:
       resources:
-        reservations:
-          # This variable can be empty for non-NVIDIA setups
-          devices: ${DEPLOY_DEVICES:-[]}
         limits:
           memory: 16G
           cpus: '8'
@@ -51,11 +62,11 @@ services:
     # =========================================================================
     environment:
       # GPU Configuration
-      - GPU_TYPE=${GPU_TYPE:-nvidia}
-      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
-      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-all}
-      - AMD_VISIBLE_DEVICES=${AMD_VISIBLE_DEVICES:-all}
-      - ROCm_VISIBLE_DEVICES=${ROCm_VISIBLE_DEVICES:-all}
+      - GPU_TYPE=${GPU_TYPE:-cpu}
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-}
+      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-}
+      - AMD_VISIBLE_DEVICES=${AMD_VISIBLE_DEVICES:-}
+      - ROCm_VISIBLE_DEVICES=${ROCm_VISIBLE_DEVICES:-}
       - LIBVA_DRIVER_NAME=${LIBVA_DRIVER_NAME:-iHD}
       - ONEAPI_DEVICE_SELECTOR=${ONEAPI_DEVICE_SELECTOR:-*}
 
@@ -95,7 +106,6 @@ services:
       - ./data/workspace:/home/antigravity/workspace
       - ./data/config:/home/antigravity/.config
       - ./data/antigravity:/home/antigravity/.antigravity
-      # - /tmp/.X11-unix:/tmp/.X11-unix:ro # Share clipboard (Linux)
 
     # Shared memory for better performance
     shm_size: '2gb'
