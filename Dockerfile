@@ -226,6 +226,24 @@ RUN groupadd -g ${GID} ${USER} \
     && chmod 0440 /etc/sudoers.d/${USER}
 
 # =============================================================================
+# Install mise and oh-my-bash for the user
+# =============================================================================
+USER ${USER}
+WORKDIR /home/${USER}
+
+# Install oh-my-bash (run first as it replaces .bashrc)
+RUN OSH_UNATTENDED=1 CHSH=no RUNBASH=no bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+
+# Install mise (polyglot runtime version manager)
+RUN curl https://mise.run | sh \
+    && echo '' >> ~/.bashrc \
+    && echo '# mise - runtime version manager' >> ~/.bashrc \
+    && echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc \
+    && echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+
+USER root
+
+# =============================================================================
 # Configure VNC and Desktop
 # =============================================================================
 # Create necessary directories

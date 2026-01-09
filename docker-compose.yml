@@ -103,9 +103,7 @@ services:
     # Volume Mounts
     # =========================================================================
     volumes:
-      - antigravity-workspace:/home/antigravity/workspace
-      - antigravity-config:/home/antigravity/.config
-      - antigravity-data:/home/antigravity/.antigravity
+      - antigravity-home:/home/antigravity
 
     # Shared memory for better performance
     shm_size: '2gb'
@@ -127,9 +125,7 @@ services:
 # Volumes
 # =============================================================================
 volumes:
-  antigravity-workspace:
-  antigravity-config:
-  antigravity-data:
+  antigravity-home:
 
 # =============================================================================
 # Networks
