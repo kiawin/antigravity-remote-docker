@@ -155,6 +155,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     htop \
     procps \
     net-tools \
+    iproute2 \
+    lsof \
+    make \
     xdg-utils \
     # Window management
     wmctrl \
@@ -221,8 +224,8 @@ RUN mkdir -p /etc/apt/keyrings \
 # =============================================================================
 RUN groupadd -g ${GID} ${USER} \
     && useradd -m -u ${UID} -g ${GID} -s /bin/bash ${USER} \
-    && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/apt-get update" >> /etc/sudoers.d/${USER} \
-    && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/apt-get install -y --only-upgrade antigravity" >> /etc/sudoers.d/${USER} \
+    && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/apt-get" >> /etc/sudoers.d/${USER} \
+    && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/apt" >> /etc/sudoers.d/${USER} \
     && echo "${USER} ALL=(root) NOPASSWD: /usr/bin/chown -R * /home/${USER}/*" >> /etc/sudoers.d/${USER} \
     && chmod 0440 /etc/sudoers.d/${USER}
 
