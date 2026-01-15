@@ -158,6 +158,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iproute2 \
     lsof \
     make \
+    clang \
+    pkg-config \
+    libglib2.0-dev \
+    libgtk-3-dev \
+    libwebkit2gtk-4.0-dev \
     xdg-utils \
     # Window management
     wmctrl \
