@@ -131,6 +131,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu \
     fonts-liberation \
     fonts-noto \
+    fonts-noto-color-emoji \
     gtk2-engines-pixbuf \
     adwaita-icon-theme \
     # noVNC dependencies
@@ -162,7 +163,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libglib2.0-dev \
     libgtk-3-dev \
-    libwebkit2gtk-4.0-dev \
+    webkit2gtk-4.1 \
+    libsoup-3.0-dev \
+    libjavascriptcoregtk-4.1-dev \
     xdg-utils \
     # Window management
     wmctrl \
@@ -240,15 +243,15 @@ RUN groupadd -g ${GID} ${USER} \
 USER ${USER}
 WORKDIR /home/${USER}
 
-# Install oh-my-bash (run first as it replaces .bashrc)
-RUN OSH_UNATTENDED=1 CHSH=no RUNBASH=no bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
-
 # Install mise (polyglot runtime version manager)
 RUN curl https://mise.run | sh \
     && echo '' >> ~/.bashrc \
     && echo '# mise - runtime version manager' >> ~/.bashrc \
     && echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc \
     && echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+
+# Install oh-my-bash (run first as it replaces .bashrc)
+RUN OSH_UNATTENDED=1 CHSH=no RUNBASH=no bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 
 USER root
 
